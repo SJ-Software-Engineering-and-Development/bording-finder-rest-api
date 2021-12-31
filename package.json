@@ -1,0 +1,25 @@
+{
+  "name": "bording-finder-rest-api",
+  "version": "1.0.0",
+  "description": "node-express-mysql",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SJ-Software-Engineering-and-Development/bording-finder-rest-api.githttps:.git"
+  },
+  "keywords": [
+    "node",
+    "express",
+    "mysql",
+    "sequelize"
+  ],
+  "author": "sjpeeris",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/SJ-Software-Engineering-and-Development/bording-finder-rest-api.githttps:/issues"
+  },
+  "homepage": "https://github.com/SJ-Software-Engineering-and-Development/bording-finder-rest-api.githttps:#readme"
+}
