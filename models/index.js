@@ -35,11 +35,18 @@ db.sequelize = sequelize;
 
 db.login = require("./login.js")(sequelize, DataTypes);
 db.userProfile = require("./userProfile.js")(sequelize, DataTypes);
+db.bording = require("./bording.js")(sequelize, DataTypes);
 
 //Relations
 db.userProfile.login = db.userProfile.belongsTo(db.login, {
   onDelete: "CASCADE",
   onUpdate: "CASCADE",
+});
+
+db.userProfile.bording = db.userProfile.hasMany(db.bording, {
+  onDelete: "CASCADE",
+  onUpdate: "CASCADE",
+  foreignKey: "accommodaterId", //accommodaterId = userProfileId
 });
 
 db.sequelize

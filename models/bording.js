@@ -1,0 +1,30 @@
+module.exports = (Sequelize, DataTypes) => {
+  const Bording = Sequelize.define("bording", {
+    title: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    price: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    location: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    ownerName: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    facilities: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    image: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+  });
+
+  return Bording;
+};
