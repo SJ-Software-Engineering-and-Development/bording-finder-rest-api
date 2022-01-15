@@ -19,6 +19,8 @@ router.post("/", validateWith(schema), async (req, res) => {
   const user = await Login.findOne({ where: { email: email } });
   if (!user)
     return res.status(400).send({ error: "Invalid email or password." });
+  if (!user.isActive)
+    return res.status(400).send({ error: "Please verify your email" });
 
   bcrypt.compare(password, user.password, async (err, result) => {
     if (result === false)

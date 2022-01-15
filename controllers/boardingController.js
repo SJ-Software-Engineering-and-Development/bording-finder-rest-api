@@ -19,6 +19,7 @@ const boardingSchema = Joi.object({
   location: Joi.string().required(),
   ownerName: Joi.string().required(),
   facilities: Joi.string().required(),
+  gender: Joi.string().required(),
   accommodaterId: Joi.string().required(),
   image: Joi.any(),
 });
@@ -52,45 +53,23 @@ router.post("/", async (req, res) => {
       location: req.body.location,
       ownerName: req.body.ownerName,
       facilities: req.body.facilities,
+      gender: req.body.gender,
       accommodaterId: req.body.accommodaterId,
       image: req.file.path,
     });
     if (error) return res.status(400).send({ error: error.details[0].message });
 
-    const title = req.body.title;
-    const price = req.body.price;
-    const location = req.body.location;
-    const ownerName = req.body.ownerName;
-    const facilities = req.body.facilities;
-    const accommodaterId = req.body.accommodaterId;
-    const image = req.file.path;
-
-    // const oldCategory = await Category.findOne({
-    //   where: { name: name },
-    // });
-    // if (oldCategory) {
-    //   //Remove uploaded file from ./uploads folder
-    //   fs.unlink(req.file.path, (err) => {
-    //     if (err) {
-    //       console.error(err);
-    //     }
-    //     //(->)file removed success
-    //   });
-    //   return res
-    //     .status(400)
-    //     .send({ error: "A catagory with the given name already exists." });
-    // }
-
     //store in Db
     let cData = {
       boarding: {
-        title: title,
-        price: price,
-        location: location,
-        ownerName: ownerName,
-        facilities: facilities,
-        accommodaterId: accommodaterId,
-        image: image,
+        title: req.body.title,
+        price: req.body.price,
+        location: req.body.location,
+        ownerName: req.body.ownerName,
+        facilities: req.body.facilities,
+        gender: req.body.gender,
+        accommodaterId: req.body.accommodaterId,
+        image: req.file.path,
       },
     };
 
@@ -108,10 +87,13 @@ router.post("/", async (req, res) => {
 });
 
 router.get("/:location", async (req, res) => {
-  const loc = req.params.location; //all | active | deactive
-
-  const boardings = await Bording.findAll({
-    where: { location: loc },
+  const loc = req.params.location;
+  //many to many (UserProfile has many boardings)
+  const boardings = await UserProfile.findAll({
+    include: {
+      model: Bording,
+      where: { location: loc }, //Where clause for inner model
+    },
   });
 
   if (!boardings)

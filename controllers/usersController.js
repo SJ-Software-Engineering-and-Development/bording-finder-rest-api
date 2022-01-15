@@ -2,11 +2,13 @@ const Joi = require("joi");
 const validateWith = require("../middleware/validation");
 const router = require("express").Router();
 const bcrypt = require("bcrypt");
+const passwordGenerator = require("generate-password");
 const verifyToken = require("../middleware/verifyToken");
 const nodemailer = require("nodemailer");
 const querystring = require("querystring");
 const multer = require("multer");
 const fs = require("fs");
+const customEmail = require("./email");
 
 const ROLE = require("../config/roleEnum");
 const imgHelper = require("../helpers/imageFilter");
@@ -70,20 +72,6 @@ router.get("/", verifyToken, async (req, res) => {
   }, 2000);
 });
 
-// router.get("/getProfiles", async (req, res) => {
-//   const users = await ModelName.findAll({
-//     include: [
-//       {
-//         association: ModelName.userProfile,
-//         include: [Login],
-//       },
-//     ],
-//   });
-//   if (!users) return res.status(400).send({ error: "No users found." });
-
-//   res.status(200).send(users);
-// });
-
 router.post("/signup/:role", async (req, res) => {
   const role = req.params.role;
   let newUser = {};
@@ -136,12 +124,19 @@ router.post("/signup/:role", async (req, res) => {
     });
     if (oldUser) {
       //Remove uploaded file from ./uploads folder
-      fs.unlink(req.file.path, (err) => {
-        if (err) {
-          console.error(err);
-        }
-        //file removed success
-      });
+      if (req.fileValidationError) {
+      } else if (!req.file) {
+      } else if (err instanceof multer.MulterError) {
+      } else if (err) {
+      } else {
+        //User provided such image. -> gonna delete
+        fs.unlink(req.file.path, (err) => {
+          if (err) {
+            console.error(err);
+          }
+          //file removed success
+        });
+      }
       return res
         .status(400)
         .send({ error: "A user with the given email already exists." });
@@ -187,9 +182,17 @@ router.post("/signup/:role", async (req, res) => {
         .status(400)
         .send({ error: "Error! Server having some trubles" });
 
-    return res.status(200).send({
-      data: `${uData.userProfile.login.email} has been registered as a ${role}`,
-    });
+    sendMail(
+      newUser.dataValues.login,
+      "e-verify",
+      "New Account has been created for your 👻",
+      (info) => {
+        return res.status(200).send({
+          data: `${uData.userProfile.login.email} has been registered as a ${role}`,
+        });
+      }
+    );
+
     /* Simulate slow N/W
   setTimeout(() => {
     
@@ -229,34 +232,35 @@ router.get("/get/:id", async (req, res) => {
 router.post("/sendmail", (req, res) => {
   console.log("request came");
   let user = req.body;
-  sendMail(user, "auto-password", (info) => {
+  sendMail(user, "e-verify", "Test subject", (info) => {
     console.log(`The mail has beed send 😃 and the id is ${info.messageId}`);
     res.send(info);
   });
 });
-
-async function sendMail(user, userPassword, callback) {
-  // create reusable transporter object using the default SMTP transport
-  let transporter = nodemailer.createTransport({
+/*
     host: "smtp.gmail.com", //host: "smtp.gmail.com",
     port: 465,
     secure: true, // true for 465, false for 587, false for other ports
+*/
+async function sendMail(user, mailType, subject, callback) {
+  // create reusable transporter object using the default SMTP transport
+  let transporter = nodemailer.createTransport({
+    service: "gmail",
+    secure: true,
     auth: {
       user: "evergreen.group.lanka@gmail.com", //user: "evergreen.group.srilanaka@gmail.com",
-      pass: "", //pass: "evergreen@123",
+      pass: "evergreen@123", //pass: "evergreen@123",
+    },
+    tls: {
+      rejectUnauthorized: false,
     },
   });
   //"cshop3493@gmail.com","Coffee#123*"
   let mailOptions = {
     from: "evergreen.group.lanka@gmail.com", // sender address
     to: user.email, // list of receivers
-    subject: "New Account has been created for your 👻", // Subject line
-    html: `<h1>Hi ${user.name}</h1><br>
-    <h2>New Account has been created for your 👻<h2>
-    <h2>User name will be ${user.email}<h2>
-    <h2>Your password: ${userPassword}<h2>
-    <h5>Please change your password right after your First login<h5>
-    <h4 style="color:Green">Thanks for joining with us</h4>`,
+    subject: subject, // Subject line
+    html: customEmail(user.id, user.name, user.password, mailType),
   };
 
   // send mail with defined transport object
@@ -264,5 +268,81 @@ async function sendMail(user, userPassword, callback) {
 
   callback(info);
 }
+
+router.get("/e-verify/:loginId", async (req, res) => {
+  const loginId = req.params.loginId;
+
+  const user = await Login.findOne({ where: { id: loginId } });
+  if (!user) return res.status(400).send({ error: "Invalid user LoginID" });
+
+  //Update last login
+  user.set({
+    isActive: 1,
+  });
+
+  await user.save();
+  return res.status(200).send(customEmail(0, user.name, "", "acc-activated"));
+  //return res.status(200).send({ data: `${user.email} Account Activated` });
+});
+
+//Forget Password
+router.post("/reset-password", async (req, res) => {
+  const { email } = req.body;
+
+  const user = await Login.findOne({ where: { email: email } });
+  if (!user)
+    /*Do not nofify invaid user mail provided, thus,:-*/ return res
+      .status(200)
+      .send({ data: "Password will be Rest soon...!" });
+
+  const newPsw = passwordGenerator.generate({
+    length: 7,
+    numbers: true,
+  });
+
+  encryptedPws = await bcrypt.hash(newPsw, 4);
+
+  //Update last login
+  user.set({
+    password: encryptedPws,
+  });
+  await user.save();
+
+  const tempuser = {
+    email: email, //Email that send with request.
+    name: user.name,
+    password: newPsw, // tempory password
+  };
+
+  sendMail(tempuser, "reset-psw", "Password reset succussfully!", (info) => {
+    return res.status(200).send({
+      data: "password has been reset Succussfully",
+    });
+  });
+});
+
+//Update Password
+router.post("/update-password", async (req, res) => {
+  const { loginId, oldPsw, newPsw } = req.body;
+
+  const user = await Login.findOne({ where: { id: loginId } });
+  if (!user) return res.status(400).send({ data: "Invalid loginID" });
+
+  //Verify old password
+  bcrypt.compare(oldPsw, user.password, async (err, result) => {
+    if (result === false)
+      return res.status(400).send({ error: "Previouse password not valid!" });
+
+    encryptedPws = await bcrypt.hash(newPsw, 4);
+
+    //Update last login
+    user.set({
+      password: encryptedPws,
+    });
+    await user.save();
+
+    return res.status(200).send({ data: "Password updated successfully" });
+  });
+});
 
 module.exports = router;
