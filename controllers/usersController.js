@@ -237,15 +237,12 @@ router.post("/sendmail", (req, res) => {
     res.send(info);
   });
 });
-/*
-    host: "smtp.gmail.com", //host: "smtp.gmail.com",
-    port: 465,
-    secure: true, // true for 465, false for 587, false for other ports
-*/
+
 async function sendMail(user, mailType, subject, callback) {
   // create reusable transporter object using the default SMTP transport
   let transporter = nodemailer.createTransport({
     service: "gmail",
+    host: "smtp.gmail.com",
     secure: true,
     auth: {
       user: "evergreen.group.lanka@gmail.com", //user: "evergreen.group.srilanaka@gmail.com",
