@@ -36,6 +36,7 @@ db.sequelize = sequelize;
 db.login = require("./login.js")(sequelize, DataTypes);
 db.userProfile = require("./userProfile.js")(sequelize, DataTypes);
 db.bording = require("./bording.js")(sequelize, DataTypes);
+db.facility = require("./facility.js")(sequelize, DataTypes);
 
 //Relations
 db.userProfile.login = db.userProfile.belongsTo(db.login, {
@@ -48,6 +49,21 @@ db.userProfile.bording = db.userProfile.hasMany(db.bording, {
   onUpdate: "CASCADE",
   foreignKey: "accommodaterId", //accommodaterId = userProfileId
 });
+
+const BoardingFacility = sequelize.define(
+  "BoardingFacility",
+  {
+    selfGranted: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: true,
+    },
+  },
+  { timestamps: false }
+);
+db.facility.belongsToMany(db.bording, { through: BoardingFacility });
+db.bording.belongsToMany(db.facility, { through: BoardingFacility });
+
+db.boardingFacility = BoardingFacility;
 
 db.sequelize
   .sync({ force: false }) //force :true - drop all tables before start

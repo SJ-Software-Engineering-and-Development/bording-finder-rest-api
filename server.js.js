@@ -5,6 +5,7 @@ const logSymbols = require("log-symbols");
 const auth = require("./controllers/authController");
 const user = require("./controllers/usersController");
 const boarding = require("./controllers/boardingController");
+const facilities = require("./controllers/facilityController");
 
 const app = express(); // express() return object. we assign it as app
 
@@ -30,6 +31,7 @@ app.use("/uploads", express.static("uploads")); //make uploads folder public & s
 app.use("/api/auth", auth);
 app.use("/api/users", user);
 app.use("/api/boarding", boarding);
+app.use("/api/facilities", facilities);
 // .................
 
 //Testing api
