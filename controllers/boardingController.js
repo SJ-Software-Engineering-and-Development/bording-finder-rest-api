@@ -5,6 +5,13 @@ const verifyToken = require("../middleware/verifyToken");
 const multer = require("multer");
 const fs = require("fs");
 const { Sequelize } = require("sequelize");
+const querystring = require("querystring");
+
+const dayjs = require("dayjs");
+var relativeTime = require("dayjs/plugin/relativeTime");
+dayjs.extend(relativeTime);
+var utc = require("dayjs/plugin/utc");
+dayjs.extend(utc);
 
 const imgHelper = require("../helpers/imageFilter");
 const imgStorage = require("../storageConfig");
@@ -20,7 +27,6 @@ const boardingSchema = Joi.object({
   title: Joi.string().required(),
   price: Joi.string().required(),
   location: Joi.string().required(),
-  ownerName: Joi.string().required(),
   category: Joi.string().required(),
   gender: Joi.string().required(),
   accommodaterId: Joi.string().required(),
@@ -32,6 +38,7 @@ const getSchema = Joi.object({
   facilities: Joi.any().required(),
 });
 
+//Create New Boarding
 router.post("/", async (req, res) => {
   const upload = multer({
     storage: imgStorage.storage,
@@ -59,7 +66,6 @@ router.post("/", async (req, res) => {
       title: req.body.title,
       price: req.body.price,
       location: req.body.location,
-      ownerName: req.body.ownerName,
       category: req.body.category,
       gender: req.body.gender,
       accommodaterId: req.body.accommodaterId,
@@ -74,7 +80,6 @@ router.post("/", async (req, res) => {
         title: req.body.title,
         price: req.body.price,
         location: req.body.location,
-        ownerName: req.body.ownerName,
         category: req.body.category,
         gender: req.body.gender,
         accommodaterId: req.body.accommodaterId,
@@ -126,6 +131,7 @@ router.post("/", async (req, res) => {
   });
 });
 
+//Search Boading
 router.post("/:location", validateWith(getSchema), async (req, res) => {
   const loc = req.params.location;
 
@@ -140,22 +146,66 @@ router.post("/:location", validateWith(getSchema), async (req, res) => {
     };
   }
 
-  const boardings = await UserProfile.findAll({
+  const boardings = await Bording.findAll({
+    where: { location: loc },
+    order: [["createdAt", "DESC"]],
     include: {
-      model: Bording,
-      where: { location: loc }, //Where clause for inner model
-      include: {
-        model: Facility,
-        attributes: ["facility"],
-        where: searchObj,
-      },
+      model: Facility,
+      attributes: ["facility"],
+      where: searchObj,
     },
-    attributes: ["id", "fullName", "address", "phone"],
+    raw: true, // <---TRUE : Result as a row data array
+    nest: true, //If associations with include
   });
 
   if (!boardings)
     return res.status(400).send({ error: "No categories found." });
-  res.status(200).send(boardings);
+  let bList = [];
+  boardings.map((item) => {
+    aBoarding = {
+      id: item.id,
+      title: item.title,
+      price: item.price,
+      location: item.location,
+      category: item.category,
+      gender: item.gender,
+      image: item.image,
+      accommodaterId: item.accommodaterId,
+      postedAt: dayjs(item.createdAt).format("YYYY-MM-DD"),
+      timeElapsed: dayjs(item.createdAt).from(dayjs(dayjs.utc().format())),
+    };
+    bList.push(aBoarding);
+  });
+
+  res.status(200).send({ data: bList });
+});
+
+/**
+ * Get a Boading by id & owner id
+ * url.../getByid?postId=1&ownerId=1
+ */
+router.get("/get/", async (req, res) => {
+  const postId = req.query.postId;
+  const accommodaterId = req.query.ownerId;
+
+  let result = await UserProfile.findOne({
+    attributes: { exclude: ["createdAt", "updatedAt"] },
+    include: {
+      model: Bording,
+      where: { id: postId, accommodaterId: accommodaterId },
+      attributes: { exclude: ["updatedAt"] },
+    },
+    raw: true, // <---TRUE : Result as a row data array
+    nest: true, //If associations with include
+  });
+
+  if (!result) return res.status(400).send({ error: "Bording Not  found." });
+
+  result.bordings.createdAt = dayjs(result.bordings.createdAt).format(
+    "YYYY-MM-DD"
+  );
+
+  return res.status(200).send({ data: result });
 });
 
 /*

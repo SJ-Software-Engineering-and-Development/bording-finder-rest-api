@@ -12,10 +12,6 @@ module.exports = (Sequelize, DataTypes) => {
       type: DataTypes.STRING,
       allowNull: false,
     },
-    ownerName: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
     category: {
       type: DataTypes.STRING,
       allowNull: false,
