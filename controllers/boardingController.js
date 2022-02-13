@@ -131,10 +131,9 @@ router.post("/", async (req, res) => {
   });
 });
 
-//Search Boading
+//Search Boading by location, facilities
 router.post("/:location", validateWith(getSchema), async (req, res) => {
   const loc = req.params.location;
-
   const facilities = req.body.facilities;
 
   let searchObj = {};

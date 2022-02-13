@@ -23,6 +23,7 @@ const schema = Joi.object({
   address: Joi.string().required(),
   phone: Joi.string().required(),
   occupation: Joi.string().required(),
+  gender: Joi.string().required(),
   email: Joi.string().email().required(),
   password: Joi.string().required().min(4),
   avatar: Joi.any(),
@@ -107,6 +108,7 @@ router.post("/signup/:role", async (req, res) => {
       address: req.body.address,
       phone: req.body.phone,
       occupation: req.body.occupation,
+      gender: req.body.gender,
       email: req.body.email,
       password: req.body.password,
     });
@@ -116,6 +118,7 @@ router.post("/signup/:role", async (req, res) => {
     const address = req.body.address;
     const phone = req.body.phone;
     const occupation = req.body.occupation;
+    const gender = req.body.gender;
     const email = req.body.email;
     const password = req.body.password;
 
@@ -151,6 +154,7 @@ router.post("/signup/:role", async (req, res) => {
         address: address,
         phone: phone,
         occupation: occupation,
+        gender: gender,
         login: {
           name: fullName,
           email: email,
