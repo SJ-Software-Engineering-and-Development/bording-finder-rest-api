@@ -169,7 +169,7 @@ router.post("/signup/:role", async (req, res) => {
         uData.userProfile.login.role = ROLE.Client;
         break;
       case ROLE.Accommodater:
-        uData.userProfile.login.role = ROLE.Client;
+        uData.userProfile.login.role = ROLE.Accommodater;
         break;
       default:
         return res.status(400).send({ error: "Error! Invalid user type" });

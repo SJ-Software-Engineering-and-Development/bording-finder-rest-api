@@ -22,7 +22,9 @@ router.post("/", validateWith(schema), async (req, res) => {
 });
 
 router.get("/", async (req, res) => {
-  const result = await Facility.findAll();
+  const result = await Facility.findAll({
+    attributes: { exclude: ["createdAt", "updatedAt"] },
+  });
   if (!result)
     return res.status(400).send({ error: "Error! Server having some trubles" });
 

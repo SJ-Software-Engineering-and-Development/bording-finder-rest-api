@@ -26,6 +26,10 @@ router.post("/", validateWith(schema), async (req, res) => {
     if (result === false)
       return res.status(400).send({ error: "Invalid email or password." });
 
+    //check whether use is active
+    if (user.isActive === false)
+      return res.status(400).send({ error: "Please verify your email" });
+
     //Update last login
     user.set({
       lastLogin: Date.now(),
