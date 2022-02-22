@@ -15,6 +15,7 @@ dayjs.extend(utc);
 
 const imgHelper = require("../helpers/imageFilter");
 const imgStorage = require("../storageConfig");
+const POST_STATUS = require("../config/postStatusEnum");
 
 const db = require("../models");
 const Login = db.login;
@@ -149,6 +150,24 @@ router.post("/:location", validateWith(getSchema), async (req, res) => {
   const facilities = req.body.facilities;
   const genders = req.body.genders;
 
+  let bSearchObj = {};
+  if (loc === "all") {
+    bSearchObj = {
+      gender: {
+        [Sequelize.Op.in]: genders,
+      },
+      status: POST_STATUS.ACTIVE,
+    };
+  } else {
+    bSearchObj = {
+      location: loc,
+      gender: {
+        [Sequelize.Op.in]: genders,
+      },
+      status: POST_STATUS.ACTIVE,
+    };
+  }
+
   let searchObj = {};
   if (facilities.length > 0) {
     searchObj = {
@@ -163,12 +182,7 @@ router.post("/:location", validateWith(getSchema), async (req, res) => {
     records.map((record) => record.get({ plain: true }));
 
   const boardings = await Bording.findAll({
-    where: {
-      location: loc,
-      gender: {
-        [Sequelize.Op.in]: genders,
-      },
-    },
+    where: bSearchObj,
     order: [["createdAt", "DESC"]],
     include: {
       model: Facility,
@@ -203,6 +217,9 @@ router.post("/:location", validateWith(getSchema), async (req, res) => {
   });
 
   res.status(200).send({ data: bList });
+  // setTimeout(function () {
+
+  // }, 5000);
 });
 
 /**
