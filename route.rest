@@ -1,0 +1,34 @@
+GET http://localhost:8081/api/boarding/get?boardingId=9&ownerId=1
+
+### | for all locations => send 'all' as location 
+
+POST http://localhost:8081/api/boarding/colombo
+Content-Type: application/json
+
+{
+    "facilities" : [1,2, 3, 4, 5],
+    "genders" : ["female","male"]
+}
+
+
+### getPosts by ownerId & status | for all owners => send 0 as ownerID 
+
+GET http://localhost:8081/api/boarding/getPosts/1/pending
+
+###
+
+PATCH http://localhost:8081/api/boarding/setPostStatus/10/denied
+
+
+###
+
+POST http://localhost:8081/api/boarding
+Content-Type: application/json
+
+{
+    "name":""
+}
+
+###
+
+GET http://localhost:8081/api/users/get/1

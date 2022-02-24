@@ -104,6 +104,13 @@ router.post("/", async (req, res) => {
     //Begin Transaction
     const t = await db.sequelize.transaction();
     try {
+      const ownerUserProf = await UserProfile.findOne({
+        where: { loginId: cData.boarding.accommodaterId },
+        attributes: ["id"],
+      });
+      // Reason: accommodaterId = owner's userProfileId
+      cData.boarding.accommodaterId = ownerUserProf.id;
+
       const newBoarding = await Bording.create(cData.boarding);
       //status has default values no need to set here
       if (!newBoarding)
@@ -179,7 +186,7 @@ router.post("/:location", validateWith(getSchema), async (req, res) => {
 
   // To get the data without meta/model information
   const getPlainData = (records) =>
-    records.map((record) => record.get({ plain: true }));
+    records != null ? records.map((record) => record.get({ plain: true })) : [];
 
   const boardings = await Bording.findAll({
     where: bSearchObj,
@@ -229,12 +236,12 @@ router.post("/:location", validateWith(getSchema), async (req, res) => {
 router.get("/get/", async (req, res) => {
   const boardingId = req.query.boardingId;
   const accommodaterId = req.query.ownerId;
-
-  // To get the data without meta/model information
-  // const getPlainData = (records) =>
-  //   records.map((record) => record.get({ plain: true }));
-  const getPlainData = (record) => record.get({ plain: true });
-  // records.map((record) => record.get({ plain: true }));
+  /**
+   To get the data without meta/model information
+   const getPlainData = (records) =>   records.map((record) => record.get({ plain: true }));
+   */
+  const getPlainData = (record) =>
+    record != null ? record.get({ plain: true }) : [];
 
   let result = await UserProfile.findOne({
     attributes: { exclude: ["createdAt", "updatedAt"] },
@@ -257,6 +264,9 @@ router.get("/get/", async (req, res) => {
 
   //console.log(result);
   //console.log(result.bordings[0].facilities);
+
+  if (result.length == 0)
+    return res.status(400).send({ error: "Bording Not  found." });
 
   //Calculae timeElapsed
   timeElapsed = dayjs(result.bordings[0].createdAt).from(
@@ -297,6 +307,83 @@ router.get("/get/", async (req, res) => {
   };
 
   return res.status(200).send({ boarding: boardingData, owner: ownerData });
+});
+
+router.get("/getPosts/:ownerId/:postsStatus", async (req, res) => {
+  const ownerId = req.params.ownerId;
+  const postsStatus = req.params.postsStatus;
+
+  let SearchObj = { accommodaterId: ownerId, status: postsStatus };
+  if (ownerId == "0") {
+    SearchObj = {
+      status: postsStatus,
+    };
+  }
+
+  /**
+   To get the data without meta/model information
+   const getPlainData = (records) =>   records.map((record) => record.get({ plain: true }));
+   */
+  const getPlainData = (record) =>
+    record != null ? record.get({ plain: true }) : [];
+
+  let result = await UserProfile.findOne({
+    attributes: { exclude: ["createdAt", "updatedAt"] },
+    include: {
+      model: Bording,
+      where: SearchObj,
+      attributes: { exclude: ["updatedAt"] },
+      include: {
+        model: Facility,
+        attributes: ["facility"],
+        through: { attributes: [] },
+      },
+    },
+  }).then(getPlainData);
+
+  if (!result) return res.status(400).send({ error: "Bordings Not  found." });
+
+  return res.status(200).send(result);
+});
+
+router.patch("/setPostStatus/:postId/:status", async (req, res) => {
+  const status = req.params.status;
+  const postId = req.params.postId;
+
+  let postStatus = "";
+  switch (status) {
+    case POST_STATUS.ACTIVE:
+      postStatus = POST_STATUS.ACTIVE;
+      break;
+    case POST_STATUS.PENDING:
+      postStatus = POST_STATUS.PENDING;
+      break;
+    case POST_STATUS.DENIED:
+      postStatus = POST_STATUS.DENIED;
+      break;
+    case POST_STATUS.EXPIRED:
+      postStatus = POST_STATUS.EXPIRED;
+      break;
+    default:
+      return res.status(400).send({ error: "Error! Invalid post status type" });
+  }
+
+  const post = await Bording.findByPk(postId);
+  if (!post)
+    return res.status(400).send({ error: "Error! Couldn't find post" });
+
+  post.set({
+    status: postStatus,
+    createdAt: dayjs(),
+  });
+
+  const savePost = await post.save();
+  if (!savePost)
+    return res
+      .status(400)
+      .send({ error: "Error! Couldn't set status, try again" });
+
+  return res.status(200).send({ data: `Status updated to ${postStatus}` });
 });
 
 /*

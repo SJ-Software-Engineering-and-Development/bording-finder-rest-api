@@ -1,5 +1,7 @@
+require("dotenv").config();
+
 module.exports = {
-  HOST: "localhost",
+  HOST: process.env.DATABASE_URL,
   USER: "root",
   PASSWORD: "",
   DB: "bording_finder",
