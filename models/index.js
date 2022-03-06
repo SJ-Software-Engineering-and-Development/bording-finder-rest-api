@@ -50,6 +50,7 @@ db.userProfile.bording = db.userProfile.hasMany(db.bording, {
   foreignKey: "accommodaterId", //accommodaterId = userProfileId
 });
 
+//Meny to many  N:N  (Boarding : Facility)
 const BoardingFacility = sequelize.define(
   "BoardingFacility",
   {

@@ -291,6 +291,7 @@ router.get("/get/", async (req, res) => {
     boardingData.category = item.category;
     boardingData.gender = item.gender;
     boardingData.description = item.description;
+    boardingData.status = item.status;
     boardingData.image = item.image;
   });
   boardingData.postedAt = rowCreatedAt;

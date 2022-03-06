@@ -192,6 +192,13 @@ router.post("/signup/:role", async (req, res) => {
         .status(400)
         .send({ error: "Error! Server having some trubles" });
 
+    /** Two things do before send emails:
+     1. Enable Less secure app access 
+        https://myaccount.google.com/lesssecureapps
+        
+     2.Allow access to your Google account   
+        https://accounts.google.com/b/0/DisplayUnlockCaptcha
+    */
     sendMail(
       newUser.dataValues.login,
       "e-verify",
@@ -249,6 +256,13 @@ router.post("/sendmail", (req, res) => {
 });
 
 async function sendMail(user, mailType, subject, callback) {
+  /** Two things do before send emails:
+     1. Enable Less secure app access 
+        https://myaccount.google.com/lesssecureapps
+        
+     2.Allow access to your Google account   
+        https://accounts.google.com/b/0/DisplayUnlockCaptcha
+  */
   // create reusable transporter object using the default SMTP transport
   let transporter = nodemailer.createTransport({
     service: "gmail",

@@ -2,6 +2,8 @@ const express = require("express"); //require("express") return an method. we as
 const cors = require("cors");
 const logSymbols = require("log-symbols");
 
+const bodyValidation = require("./middleware/bodyValidation");
+
 const auth = require("./controllers/authController");
 const user = require("./controllers/usersController");
 const boarding = require("./controllers/boardingController");
@@ -25,6 +27,7 @@ app.use(cors(corOptions));
 //This belogns to requesat posessing pipe line. so we handling req and res by JSON format.
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(bodyValidation);
 
 app.use("/uploads", express.static("uploads")); //make uploads folder public & static to route that has url/uploads
 
