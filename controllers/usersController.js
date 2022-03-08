@@ -352,7 +352,7 @@ router.post("/update-password", async (req, res) => {
   //Verify old password
   bcrypt.compare(oldPsw, user.password, async (err, result) => {
     if (result === false)
-      return res.status(400).send({ error: "Previouse password not valid!" });
+      return res.status(400).send({ error: "Current password is invalid!" });
 
     encryptedPws = await bcrypt.hash(newPsw, 4);
 
