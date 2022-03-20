@@ -1,0 +1,12 @@
+{
+  "type": "service_account",
+  "project_id": "covid-19-self-care-app",
+  "private_key_id": "b9c2b0ada1e0820860e0258cb6e2342af329a646",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQDBRCyGR2xLa/wE\nLNUsz77Fd8AEdvUwlg7FND7XjmJIp8Vbuz/bQfbNWxVxEpvM4yPhmbD1P9ohxE4p\n8H3+HuuxHXQ62lwjPhMbwzAUnCjt5CQCtob89kw6o6hytKPs8UQ9nVbJV8vn3MQ0\nqCvUPClXxWbVVexw5lvy1WFw5dkvpZGnQihVt4bmq5wjM8s3MRX5mFA3FkOISXEt\n0D0euCq0RK4t+Gau6N80aBeHsxOnbSvlpe/vSYj5H+U6sui1W7zlieBVpmUeWnVO\n6dD6spethjoaKpP+pshRI9e4PqU5Tc3MugLOz287akFVZ7OyvCD5ugLJSAQ0A7j5\n84o73cX1AgMBAAECggEAA1t+VITYHkVNdvsaZvFi9IY8iTdR0hrBPe7G6rK4BWAY\nvxu1I8d1FKMw76ptl3UYsfocB16pGO4Sl4rsfWYnHQgQdVdGw3v4FALjinAeC+fr\nMjrehHV45InkSr3VnS+hylo54DyMt8XviKSlQkYbR8GPpEQeW+W8ki7fxvjPOZMk\ndJPfSeWNNUtJ/KcTWyTtFSBvoe06BVbJTQIJpjXO1I87L4Knp98Sb6YPsGmqaowJ\n5GKOJT4IgXwFzZnBS3fbNXUdlWYt0kbOwkun/VTNqXyFOrTSsnxyOKOPT+09QDNH\nu+miOLzUtMOdybBPrcS6j/SIraoWp4xRZo9U/hS4zwKBgQD+oXttnrnK74qrkQC6\nFjP4Odsmk2p2dP5jL4F7CgMIv67r3nuTAcmWjgVIqQFswRPknHgNf1GHT9kowM4L\nGFZTG9D6Ywx91LRX+9hIMoVf1WIrR7AQh+JgbAnI2Rx1IXVMaKvv1KCcHxWjFRjw\nCAdFm+PWsXMkKPFNRrz0gyGK3wKBgQDCTjgWZWdkwWNvLclhzZ2dAZ4vvclE6Nao\n2pd2z3YNEtCBDC3AjrcbERTRr7s/MVlKyc82d5Lgmm3ovsy3j/IJJCeEzlcSPtOj\n4Nwt1HpYfvGkMFg+lo1hsTWAbXTlOrEOyF7+GDCGE2BMjzXVv/ntFsKUYdysaGTX\nqLR+Pl1dqwKBgQDC/NHR7fyEpM7h9tZBqgL+EP/7GGQsdgbf2V8j41TTfEXtJaAn\nwPSoL/Vn4NPQfkJHjHJ6k4bRQZogFRUzdd2VIvXy56qHKT05KwhCsT1lV7gnQGxZ\nHFWEVPdhMLEUGR0D+BvCOmcLZtpg2iUQmnVHHstoetabWCcAcCz+aPRkrQKBgG8W\nw1Bip2teeZgN6G4HXY5vZ15KNnE0Yc3mM+SUlhzBXf351Yqazasm5+0+eGKXt0Jg\nAR1V3d6VzDLeKzLjlHCPgByY0AU5cEzoeVmmelBwO30wurMF5k0tQLZtXgDUvngC\nLPU/JTbyiwMaeZ/8g0p+0b59+OmFQepepNrskvrDAoGAbBCTHNk/Dt5HfLzQdzBF\nDCcqUD9OH0YWBLAksRF+yquTu5BUk9FZcHkYB/eZVIB/CDS2kCsqaElchECSm4Bo\nRYcRF9zcIaiZbghKzHBJgISdO6MrjmKr2N3cUwJiKxRjhWnvz2efMALwInuTQX6o\ntPl48OdH3GtF83Sl2KoHI0Y=\n-----END PRIVATE KEY-----\n",
+  "client_email": "firebase-adminsdk-mpp0h@covid-19-self-care-app.iam.gserviceaccount.com",
+  "client_id": "113603839321552025263",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-mpp0h%40covid-19-self-care-app.iam.gserviceaccount.com"
+}

@@ -18,6 +18,14 @@ const db = require("../models");
 const Login = db.login;
 const UserProfile = db.userProfile;
 
+const { uploadAvatar, deleteAvatar } = require("../services/firebase");
+
+const Multer = multer({
+  storage: multer.memoryStorage(),
+  limits: 1024 * 1024 * 5,
+  fileFilter: imgHelper.imageFilter,
+});
+
 const schema = Joi.object({
   fullName: Joi.string().required(),
   address: Joi.string().required(),
@@ -33,6 +41,7 @@ const signOutSchema = Joi.object({
   email: Joi.string().email().required(),
 });
 
+// signout
 router.post(
   "/signout",
   verifyToken,
@@ -73,7 +82,8 @@ router.get("/", verifyToken, async (req, res) => {
   }, 2000);
 });
 
-router.post("/signup/:role", async (req, res) => {
+//TO REMOVE TO REMOVE TO REMOVE TO REMOVE
+router.post("/signupOLDDDDDDDDDDDD/:role", async (req, res) => {
   const role = req.params.role;
   let newUser = {};
 
@@ -218,6 +228,79 @@ router.post("/signup/:role", async (req, res) => {
   });
 });
 
+router.post(
+  "/signup/:role",
+  Multer.single("avatar"),
+  uploadAvatar,
+  async (req, res) => {
+    const role = req.params.role;
+    let newUser = {};
+
+    //If user doesn't provide file or uplaoded error Set default avatar already in bucket
+    const avatar = req.file
+      ? req.file.firebaseUrl
+      : "https://storage.googleapis.com/covid-19-self-care-app.appspot.com/avatars/default-avatar.png";
+    // const imageFileName = req.file.fileName;
+
+    //Encrypt Password
+    encryptedPassword = await bcrypt.hash(req.body.password, 5);
+
+    let uData = {
+      userProfile: {
+        fullName: req.body.fullName,
+        address: req.body.address,
+        phone: req.body.phone,
+        occupation: req.body.occupation,
+        gender: req.body.gender,
+        login: {
+          name: req.body.fullName,
+          email: req.body.email,
+          password: encryptedPassword,
+          avatar: avatar,
+          role: role, // Role is already validated in firebase.js
+        },
+      },
+    };
+
+    //store in Db
+
+    //status , lastLogin has default values no need to set here
+    //Create user
+    newUser = await UserProfile.create(uData.userProfile, {
+      include: [Login],
+    });
+
+    if (!newUser)
+      return res
+        .status(400)
+        .send({ error: "Error! Server having some trubles" });
+
+    /** Two things do before send emails:
+     1. Enable Less secure app access 
+        https://myaccount.google.com/lesssecureapps
+        
+     2.Allow access to your Google account   
+        https://accounts.google.com/b/0/DisplayUnlockCaptcha
+    */
+    sendMail(
+      newUser.dataValues.login,
+      "e-verify",
+      "New Account has been created for your 👻",
+      (info) => {
+        return res.status(200).send({
+          data: `${uData.userProfile.login.email} has been registered as a ${role}`,
+        });
+      }
+    );
+
+    /* Simulate slow N/W
+  setTimeout(() => {
+    
+  }, 1000);
+  */
+  }
+);
+
 router.get("/get", async (req, res) => {
   const users = await UserProfile.findAll({
     include: {
@@ -254,41 +337,6 @@ router.post("/sendmail", (req, res) => {
     res.send(info);
   });
 });
-
-async function sendMail(user, mailType, subject, callback) {
-  /** Two things do before send emails:
-     1. Enable Less secure app access 
-        https://myaccount.google.com/lesssecureapps
-        
-     2.Allow access to your Google account   
-        https://accounts.google.com/b/0/DisplayUnlockCaptcha
-  */
-  // create reusable transporter object using the default SMTP transport
-  let transporter = nodemailer.createTransport({
-    service: "gmail",
-    host: "smtp.gmail.com",
-    secure: true,
-    auth: {
-      user: "evergreen.group.lanka@gmail.com", //user: "evergreen.group.srilanaka@gmail.com",
-      pass: "evergreen@123", //pass: "evergreen@123",
-    },
-    tls: {
-      rejectUnauthorized: false,
-    },
-  });
-  //"cshop3493@gmail.com","Coffee#123*"
-  let mailOptions = {
-    from: "evergreen.group.lanka@gmail.com", // sender address
-    to: user.email, // list of receivers
-    subject: subject, // Subject line
-    html: customEmail(user.id, user.name, user.password, mailType),
-  };
-
-  // send mail with defined transport object
-  let info = await transporter.sendMail(mailOptions);
-
-  callback(info);
-}
 
 router.get("/e-verify/:loginId", async (req, res) => {
   const loginId = req.params.loginId;
@@ -365,5 +413,40 @@ router.post("/update-password", async (req, res) => {
     return res.status(200).send({ data: "Password updated successfully" });
   });
 });
+
+async function sendMail(user, mailType, subject, callback) {
+  /** Two things do before send emails:
+     1. Enable Less secure app access 
+        https://myaccount.google.com/lesssecureapps
+        
+     2.Allow access to your Google account   
+        https://accounts.google.com/b/0/DisplayUnlockCaptcha
+  */
+  // create reusable transporter object using the default SMTP transport
+  let transporter = nodemailer.createTransport({
+    service: "gmail",
+    host: "smtp.gmail.com",
+    secure: true,
+    auth: {
+      user: "evergreen.group.lanka@gmail.com",
+      pass: "evergreen@123",
+    },
+    tls: {
+      rejectUnauthorized: false,
+    },
+  });
+
+  let mailOptions = {
+    from: "evergreen.group.lanka@gmail.com", // sender address
+    to: user.email, // list of receivers
+    subject: subject, // Subject line
+    html: customEmail(user.id, user.name, user.password, mailType),
+  };
+
+  // send mail with defined transport object
+  let info = await transporter.sendMail(mailOptions);
+
+  callback(info);
+}
 
 module.exports = router;

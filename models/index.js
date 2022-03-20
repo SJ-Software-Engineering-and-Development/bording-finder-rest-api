@@ -67,7 +67,7 @@ db.bording.belongsToMany(db.facility, { through: BoardingFacility });
 db.boardingFacility = BoardingFacility;
 
 db.sequelize
-  .sync({ force: false, alter: true }) //force :true - drop all tables before start
+  .sync({ force: false, alter: false }) //force :true - drop all tables before start
   .then(() => {
     console.log(
       logSymbols.success + "\x1b[36m%s\x1b[0m",

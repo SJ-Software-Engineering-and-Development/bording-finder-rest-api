@@ -24,10 +24,20 @@ const Bording = db.bording;
 const Facility = db.facility;
 const BoardingFacility = db.boardingFacility;
 
+const { uploadPostImage } = require("../services/firebase");
+
+const Multer = multer({
+  storage: multer.memoryStorage(),
+  limits: 1024 * 1024 * 5,
+  fileFilter: imgHelper.imageFilter,
+});
+
 const boardingSchema = Joi.object({
   title: Joi.string().required(),
   price: Joi.string().required(),
   location: Joi.string().required(),
+  longitude: Joi.string(), //Optional
+  latitude: Joi.string(), //Optional
   category: Joi.string().required(),
   gender: Joi.string().required(),
   accommodaterId: Joi.string().required(),
@@ -42,7 +52,7 @@ const getSchema = Joi.object({
 });
 
 //Create New Boarding
-router.post("/", async (req, res) => {
+router.post("/olddddd", async (req, res) => {
   const upload = multer({
     storage: imgStorage.storage,
     limits: { fileSize: 1024 * 1024 * 5 },
@@ -127,8 +137,6 @@ router.post("/", async (req, res) => {
       });
 
       await BoardingFacility.bulkCreate(fData);
-
-      await t.commit(); // End & commit the transaction.
     } catch (error) {
       await t.rollback(); //End & rollback the transaction.
       console.log(error);
@@ -144,10 +152,77 @@ router.post("/", async (req, res) => {
         .status(400)
         .send({ error: "Error! Data didn`t saved, Try again" });
     }
+    await t.commit(); // End & commit the transaction.
 
     return res.status(200).send({
       data: `New boarding has been added!`,
     });
+  });
+});
+
+//Create New Boarding
+router.post("/", Multer.single("image"), uploadPostImage, async (req, res) => {
+  //If user doesn't provide file or uplaoded error Set default avatar already in bucket
+  const imageUrl = req.file ? req.file.firebaseUrl : "path/to/default-image";
+  // const imageFileName = req.file.fileName;
+
+  //store in Db
+  let cData = {
+    boarding: {
+      title: req.body.title,
+      price: req.body.price,
+      location: req.body.location,
+      longitude: req.body.longitude,
+      latitude: req.body.latitude,
+      category: req.body.category,
+      gender: req.body.gender,
+      accommodaterId: req.body.accommodaterId,
+      description: req.body.description,
+      image: imageUrl,
+      facilities: req.body.facilities,
+    },
+  };
+
+  //Begin Transaction
+  const t = await db.sequelize.transaction();
+  try {
+    const ownerUserProf = await UserProfile.findOne({
+      where: { loginId: cData.boarding.accommodaterId },
+      attributes: ["id"],
+    });
+    // Reason: accommodaterId = owner's userProfileId
+    cData.boarding.accommodaterId = ownerUserProf.id;
+
+    const newBoarding = await Bording.create(cData.boarding);
+    //status has default values no need to set here
+    if (!newBoarding)
+      return res
+        .status(400)
+        .send({ error: "Error! Server having some trubles" });
+
+    //Facility ids should be send in the form of comma separated
+    const facilities = cData.boarding.facilities.split(",");
+
+    const fData = [];
+    facilities.forEach((item, index) => {
+      fData.push({ facilityId: item, bordingId: newBoarding.id });
+    });
+
+    await BoardingFacility.bulkCreate(fData);
+  } catch (error) {
+    await t.rollback(); //End & rollback the transaction.
+    console.log(error);
+    //Remove uploaded file from ./uploads folder
+    // To do ........
+
+    return res
+      .status(400)
+      .send({ error: "Error! Data didn`t saved, Try again" });
+  }
+  await t.commit(); // End & commit the transaction.
+
+  return res.status(200).send({
+    data: `New boarding has been added!`,
   });
 });
 
@@ -288,6 +363,8 @@ router.get("/get/", async (req, res) => {
     boardingData.title = item.title;
     boardingData.price = item.price;
     boardingData.location = item.location;
+    boardingData.longitude = item.longitude;
+    boardingData.latitude = item.latitude;
     boardingData.category = item.category;
     boardingData.gender = item.gender;
     boardingData.description = item.description;
