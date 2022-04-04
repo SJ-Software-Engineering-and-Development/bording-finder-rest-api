@@ -37,7 +37,7 @@ const boardingSchema = Joi.object({
   facilities: Joi.string().required(),
 });
 
-const BUCKET = "covid-19-self-care-app.appspot.com";
+const BUCKET = "sl-boarding-finder.appspot.com";
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
@@ -53,7 +53,8 @@ const storage = admin.storage();
  * 3. select Node js
  * 4. genarate new private key - then a file will download
  * 5. create firebase-key.json file under config folder
- * 6. copy content of above downloaded file into firebase-key.json
+ * 6. goto build -> storage - start -> chooes production mode
+ * 7. copy content of above downloaded file into firebase-key.json
  * Change Rules : storage -> rules
   https://console.firebase.google.com/u/1/project/gfod-app/storage/gfod-app.appspot.com/rules
 
