@@ -12,7 +12,7 @@ const customEmail = require("./email");
 
 const ROLE = require("../config/roleEnum");
 const imgHelper = require("../helpers/imageFilter");
-const imgStorage = require("../storageConfig");
+const imgStorage = require("../config/storageConfig");
 
 const db = require("../models");
 const Login = db.login;

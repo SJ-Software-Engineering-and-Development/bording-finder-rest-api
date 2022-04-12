@@ -14,7 +14,7 @@ var utc = require("dayjs/plugin/utc");
 dayjs.extend(utc);
 
 const imgHelper = require("../helpers/imageFilter");
-const imgStorage = require("../storageConfig");
+const imgStorage = require("../config/storageConfig");
 const POST_STATUS = require("../config/postStatusEnum");
 
 const db = require("../models");
